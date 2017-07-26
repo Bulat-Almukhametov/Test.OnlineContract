@@ -1,0 +1,59 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<span id="logoff" class="btn btn-default" style="float: right;">Выйти</span>
+
+<h2>Аукцион</h2>
+
+<div id="Auctions">
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#productA" role="tab" data-toggle="tab">Товар А</a></li>
+        <li role="presentation"><a href="#productB" role="tab" data-toggle="tab">Товар Б</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content form-group" id="product-tab">
+        <div role="tabpanel" class="tab-pane active" id="productA">
+            <span class="h3">Товар А</span> <hr/>
+            Цена: <span data-bind="text: price"></span> <br/>
+            <input type="number" class="form-group" data-bind="value: offerPrice" />
+            <span class="btn btn-success sail-btn">Купить</span>
+        </div>
+
+
+        <div role="tabpanel" class="tab-pane" id="productB">
+            <span class="h3">Товар Б</span> <hr />
+        </div>
+    </div>
+</div>
+
+<div class="modal fade auctionModalBox" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content" style="height: 80px;text-align: center;padding: 8px;font-size: large;">
+            ...
+        </div>
+    </div>
+</div>
+@section Scripts
+{
+    <script type="text/javascript">
+        $(function () {
+
+            $("#logoff").click(function () {
+                $.post("/Account/Logoff").done(function () {
+                    window.location.replace("/Account/Login");
+                });
+            });
+
+            $('#Auctions a').click(function (e) {
+                e.preventDefault()
+                $(this).tab('show');
+            });
+        });
+    </script>
+    <script type="text/javascript" src="~/Scripts/jquery.signalR-2.2.2.js">
+    </script><script src="~/signalr/hubs"></script>
+    <script type="text/javascript" src="~/Scripts/auction-utils.js"></script>
+}

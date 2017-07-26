@@ -1,0 +1,148 @@
+﻿<div id="CalculatorBoard">
+    <div id="calculator">
+        <!-- Шапка -->
+        <div class="top">
+            <span class="clear">C</span>
+            <div class="screen" data-bind="text: fullExpression"></div>
+        </div>
+
+        <div class="keys">
+            <!-- Клавиши -->
+            <span>7</span>
+            <span>8</span>
+            <span>9</span>
+            <span class="operator">+</span>
+            <span>4</span>
+            <span>5</span>
+            <span>6</span>
+            <span class="operator">-</span>
+            <span>1</span>
+            <span>2</span>
+            <span>3</span>
+            <span class="operator">÷</span>
+            <span>0</span>
+            <span>.</span>
+            <span class="eval">=</span>
+            <span class="operator">x</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(function () {
+
+            var firstOperand = ko.observable("");
+            var secondOperand = ko.observable("");
+            var operator = ko.observable(null);
+
+            $(".keys").click(function (event) {
+                var buttonElement = event.target;
+
+                if (buttonElement && isNumberKey(buttonElement)) {
+                    if (hasOperator()) {
+                        secondOperand._latestValue += buttonElement.textContent;
+                        secondOperand.valueHasMutated();
+                    }
+                    else {
+                        firstOperand._latestValue += buttonElement.textContent;
+                        firstOperand.valueHasMutated();
+                    }
+                }
+            });
+
+            $(".operator").click(function (event) {
+                var buttonElement = event.target;
+                if (!hasOperator()) {
+                    operator._latestValue = buttonElement.textContent;
+                    operator.valueHasMutated();
+                }
+            });
+
+            $(".clear").click(function (event) {
+                clearValues();
+            });
+
+            $(".eval").click(function (event) {
+                var operatorName = "";
+                switch (operator().toLowerCase()) {
+                    case "+":
+                        operatorName = "add";
+                        break;
+
+                    case "-":
+                        operatorName = "subtract";
+                        break;
+
+                    case "x":
+                        operatorName = "multiple";
+                        break;
+
+                    case "÷":
+                        operatorName = "divide";
+                        break;
+
+                    default:
+                        return;
+                }
+
+                $.ajax({
+                    method: "POST",
+                    url: "/api/Calculate",
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: JSON.stringify({
+                        "firstOperand": firstOperand(),
+                        "secondOperand": secondOperand(),
+                        "operatorName": operatorName
+                    })
+                })
+                    .done(onDataRecieved);
+
+            });
+
+            var ViewModel = function () {
+                this.firstOperand = firstOperand;
+                this.secondOperand = secondOperand;
+                this.operator = operator;
+                this.fullExpression = ko.computed(function () {
+                    var displayValue = toDisplayValue(this.firstOperand()) + " " + toDisplayValue(this.operator())
+                        + " " + toDisplayValue(this.secondOperand());
+
+                    return displayValue.trim() ? displayValue : 0;
+                }, this);
+            };
+
+            ko.applyBindings(new ViewModel());
+
+            function toDisplayValue(value) {
+                return value ? value : "";
+            }
+
+            function isNumberKey(buttonElement) {
+                return !buttonElement.classList.contains("operator") && !buttonElement.classList.contains("eval");
+            }
+
+            function hasOperator() {
+                return !!operator()
+            }
+
+            function clearValues() {
+                firstOperand._latestValue = "";
+                firstOperand.valueHasMutated();
+
+                secondOperand._latestValue = "";
+                firstOperand.valueHasMutated();
+
+                operator._latestValue = "";
+                firstOperand.valueHasMutated();
+            }
+
+            function onDataRecieved(result) {
+                clearValues();
+                firstOperand._latestValue = result;
+                firstOperand.valueHasMutated();
+            }
+        });
+    </script>
+}

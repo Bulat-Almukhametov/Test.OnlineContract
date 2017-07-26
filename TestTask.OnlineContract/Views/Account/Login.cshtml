@@ -1,0 +1,50 @@
+﻿
+@{
+    ViewBag.Title = "Авторизация";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Войдите в систему</h2>
+
+<form id="authorizationForm" class="container">
+    <div class="input-group" style="margin-bottom: 20px;">
+        <span class="input-group-addon" style="width: 80px;">Логин</span>
+        <input id="login" type="text" class="form-control" style="max-width: 200px;" />
+    </div>
+    <div class="input-group" style="margin-bottom: 12px;">
+        <span class="input-group-addon" style="width: 80px;">Пароль</span>
+        <input id="password" type="password" class="form-control" style="max-width: 200px;" />
+        @Html.Hidden("BigNumber", Guid.NewGuid())
+    </div>
+    <input type="submit" class="btn btn-primary" value="Войти" />
+    <input type="reset" class="btn btn-default" value="Сбросить" />
+</form>
+
+@section Scripts
+{
+    <script type="text/javascript" src="~/Scripts/sha1.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#authorizationForm input[type='submit']").click(function (event) {
+                event.preventDefault();
+
+                $.ajax({
+                    method: "POST",
+                    url: "Login",
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: JSON.stringify({
+                        "Login": $("#login").val(),
+                        "HashValue": sha1(sha1($("#password").val()) + $("#BigNumber").val()),
+                        "BigNumber": $("#BigNumber").val()
+                    })
+                }).done(function () {
+                    window.location.replace("/Home/Auction");
+                    });
+                $("#login").val("");
+                $("#password").val("");
+            });
+
+        });
+    </script>
+}
